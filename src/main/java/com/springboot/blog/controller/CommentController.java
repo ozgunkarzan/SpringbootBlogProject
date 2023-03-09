@@ -6,6 +6,7 @@ import com.springboot.blog.service.CommentService;
 import com.springboot.blog.service.impl.CommentServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -21,6 +22,7 @@ public class CommentController {
 
     CommentService commentService;
 
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<CommentDTO> createComment(@PathVariable(name="postId") long postId,@Valid @RequestBody CommentDTO commentDTO){
 
@@ -40,6 +42,7 @@ public class CommentController {
         return new ResponseEntity<CommentDTO>(commentService.getCommentById(postId,commentId),HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('USER')")
     @PutMapping("/posts/{postId}/comments/{commentId}")
     public ResponseEntity<CommentDTO>updateComment(@PathVariable(name="postId") long postId,
                                                    @PathVariable(name="commentId") long commentId,
@@ -48,6 +51,7 @@ public class CommentController {
         return new ResponseEntity<>(commentService.updateComment(postId,commentId,commentDTO),HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/posts/{postId}/comments/{commentId}")
     public ResponseEntity<CommentDTO>deleteComment(@PathVariable(name="postId") long postId,
                                                    @PathVariable(name="commentId") long commentId){

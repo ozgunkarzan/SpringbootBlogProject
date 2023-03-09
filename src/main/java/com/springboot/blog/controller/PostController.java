@@ -9,6 +9,7 @@ import com.springboot.blog.utils.AppConstants;
 import org.springframework.data.mapping.model.AbstractPersistentProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -25,6 +26,7 @@ public class PostController {
         this.postService = postService;
     }
     //create post API
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<PostDTO> createPost(@Valid @RequestBody PostDTO postDTO){
 
@@ -49,11 +51,13 @@ public class PostController {
     }
 
     //Update Post API
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<PostDTO> updatePost(@PathVariable(name="id") long id,@Valid @RequestBody PostDTO postDTO){
         return ResponseEntity.ok(postService.updatePost(id, postDTO));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<PostDTO>deletePost(@PathVariable(name="id") long id){
         return ResponseEntity.ok(postService.deletePost(id));

@@ -1,12 +1,14 @@
 package com.springboot.blog.service.impl;
 
+import com.springboot.blog.entity.Role;
+import com.springboot.blog.entity.User;
 import com.springboot.blog.exception.BlogAPIException;
 import com.springboot.blog.payload.LoginDTO;
 import com.springboot.blog.payload.SignUpDTO;
 import com.springboot.blog.repository.RoleRepository;
 import com.springboot.blog.repository.UserRepository;
+import com.springboot.blog.security.JwtTokenProvider;
 import com.springboot.blog.service.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,20 +17,29 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Service
 public class AuthServiceImp implements AuthService {
 
     private AuthenticationManager authenticationManager;
     private UserRepository userRepository;
-    private RoleRepository repository;
+    private RoleRepository roleRepository;
     private PasswordEncoder passwordEncoder;
+    private JwtTokenProvider jwtTokenProvider;
 
-    @Autowired
-    public AuthServiceImp(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository repository, PasswordEncoder passwordEncoder) {
+    public AuthServiceImp(AuthenticationManager authenticationManager,
+                          UserRepository userRepository,
+                          RoleRepository roleRepository,
+                          PasswordEncoder passwordEncoder,
+                          JwtTokenProvider jwtTokenProvider) {
+
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
-        this.repository = repository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Override
@@ -39,7 +50,8 @@ public class AuthServiceImp implements AuthService {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        return "User Logged In Successfully";
+        String token= jwtTokenProvider.generateToken(authentication);
+        return token;
     }
 
     @Override
@@ -58,6 +70,19 @@ public class AuthServiceImp implements AuthService {
             throw new BlogAPIException("The email is already registered", HttpStatus.BAD_REQUEST);
         }
 
-        return null;
+        User user=new User();
+        user.setName(signUpDTO.getName());
+        user.setUsername(signUpDTO.getUsername());
+        user.setEmail(signUpDTO.getEmail());
+        user.setPassword(passwordEncoder.encode(signUpDTO.getPassword()));
+
+        Set<Role> roles= new HashSet<>();
+        Role userRole= roleRepository.findByName("ROLE_USER").get();
+        roles.add(userRole);
+        user.setRoles(roles);
+
+        userRepository.save(user);
+
+        return "User registered successfully";
     }
 }

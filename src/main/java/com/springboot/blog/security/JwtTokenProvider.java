@@ -18,9 +18,10 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    @Value("{$app.jwt-secret}")
+
+    @Value("${app.jwt-secret}")
     private String jwtSecret;
-    @Value("{$apt.jwt-expiration-milliseconds}")
+    @Value("${app-jwt-expiration-milliseconds}")
     private Long jwtExpirationDate;
 
 
@@ -31,6 +32,8 @@ public class JwtTokenProvider {
 
         Date currentDate =new Date();
         Date expirationDate=new Date(currentDate.getTime()+jwtExpirationDate);
+
+        System.out.println(jwtSecret);
 
         String token= Jwts.builder().setSubject(username)
                 .setIssuedAt(currentDate)
